@@ -8,14 +8,57 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+    @State private var activities = Activities()
+    @State private var showingAddActivity = false
+    
+    func truncateDescription(_ description: String, maxLength: Int) -> String {
+        if description.count <= maxLength {
+            return description
+        } else {
+            let index = description.index(
+                description.startIndex,
+                offsetBy: maxLength - 3
+            )
+            return String(description[..<index]) + "..."
         }
-        .padding()
+    }
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(activities.items) { activity in
+                    NavigationLink(
+                        destination:
+                            ActivityDetailView(
+                                activity: activity,
+                                activities: activities
+                            )
+                    ) {
+                        VStack (alignment: .leading) {
+                            Text(activity.title)
+                                .font(.headline)
+                            Text(
+                                truncateDescription(
+                                    activity.description,
+                                    maxLength: 20
+                                )
+                            )
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Habit Tracker")
+            .toolbar {
+                Button("Add new habit") {
+                    showingAddActivity = true
+                }
+            }
+            .sheet(isPresented: $showingAddActivity) {
+                AddActivityView(activities: activities)
+            }
+        }
     }
 }
 
